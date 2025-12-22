@@ -1,0 +1,17 @@
+name: Emulate Fastlane
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  emulate_fastlane:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - name: Emular Fastlane (script de exemplo)
+        run: echo "Executando script de emulação do Fastlane!"
