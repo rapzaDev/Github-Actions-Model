@@ -10,7 +10,7 @@ on:
 jobs:
   emulate_fastlane:
     runs-on: ubuntu-latest
-    needs: build
+    # needs: build
     steps:
       - uses: actions/checkout@v3
       - name: Emular Fastlane (script de exemplo)
