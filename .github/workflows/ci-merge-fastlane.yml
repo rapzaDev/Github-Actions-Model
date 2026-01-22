@@ -23,5 +23,36 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-      - name: Emular Fastlane (após merge)
-        run: echo "Executando Fastlane após merge na main!"
+      - name: Provisionar Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Provisionar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.5'
+      - name: Provisionar Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+      - name: Mock - reconstruir credenciais
+        env:
+          PLAY_STORE_JSON: ${{ secrets.PLAY_STORE_JSON }}
+          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+        run: |
+          set -euo pipefail
+          PLAY_STORE_JSON_CONTENT="${PLAY_STORE_JSON:-mock-play-store-json}"
+          APP_STORE_CONNECT_KEY_CONTENT="${APP_STORE_CONNECT_KEY:-mock-app-store-connect-key}"
+
+          printf '%s' "$PLAY_STORE_JSON_CONTENT" > "$RUNNER_TEMP/play-store.json"
+          printf '%s' "$APP_STORE_CONNECT_KEY_CONTENT" > "$RUNNER_TEMP/app-store-connect-key.p8"
+
+          echo "PLAY_STORE_JSON_PATH=$RUNNER_TEMP/play-store.json" >> "$GITHUB_ENV"
+          echo "APP_STORE_CONNECT_KEY_PATH=$RUNNER_TEMP/app-store-connect-key.p8" >> "$GITHUB_ENV"
+      - name: Mock - executar Fastlane
+        run: bash scripts/mock_fastlane.sh release_all
+      - name: Mock - destruir credenciais
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/play-store.json" "$RUNNER_TEMP/app-store-connect-key.p8"
