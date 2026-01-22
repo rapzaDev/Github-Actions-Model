@@ -66,3 +66,4 @@ esac
 
 step "Fastlane mock complete"
 log "No real builds or uploads were performed."
+log "end."
